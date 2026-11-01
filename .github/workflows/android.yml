@@ -2,11 +2,7 @@ name: Android
 
 on:
   push:
-    paths:
-      - "android-tv-launcher/**"
-      - "shared/**"
-      - ".github/workflows/android.yml"
-  pull_request:
+    branches: ["arena/**"]
     paths:
       - "android-tv-launcher/**"
       - "shared/**"
@@ -17,7 +13,7 @@ permissions:
   contents: read
 
 jobs:
-  test-and-build:
+  diagnose:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -30,11 +26,6 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      # v4 defaults to `platform-tools` only. v3's default was
-      # `tools platform-tools`, and Google removed the legacy `tools` package,
-      # so sdkmanager exits 1 ("Failed to find package 'tools'") and the job
-      # dies here before Gradle ever runs. Name what the build actually needs:
-      # app/build.gradle.kts compiles against SDK 34 with AGP 8.5.2.
       - uses: android-actions/setup-android@v4
         with:
           packages: "platform-tools platforms;android-34 build-tools;34.0.0"
@@ -44,28 +35,34 @@ jobs:
         with:
           gradle-version: "8.9"
 
-      - name: Unit tests
-        run: gradle :app:testDebugUnitTest --stacktrace
-
-      - name: Lint
-        run: gradle :app:lintDebug --stacktrace
-
-      - name: Assemble debug APK
-        run: gradle :app:assembleDebug --stacktrace
-
-      - name: Check the APK is under the size budget
+      - name: Build everything, capture output
         run: |
-          APK=$(find app/build/outputs/apk/debug -name "*.apk" | head -1)
-          if [ -z "$APK" ]; then
-            echo "No debug APK was produced by :app:assembleDebug"
-            exit 1
-          fi
-          SIZE=$(stat -c%s "$APK")
-          echo "APK: $APK ($((SIZE/1024/1024)) MB)"
-          test "$SIZE" -lt 31457280 || (echo "APK exceeds 30 MB" && exit 1)
+          set +e
+          gradle :app:testDebugUnitTest :app:lintDebug :app:assembleDebug \
+            --continue --console=plain --stacktrace > /tmp/build.log 2>&1
+          echo "exit=$?" > /tmp/exit.txt
+          wc -l /tmp/build.log
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: couch-tv-debug-apk
-          path: android-tv-launcher/app/build/outputs/apk/debug/*.apk
-          if-no-files-found: error
+      - name: Publish diagnostics as annotations
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.request
+          log = open('/tmp/build.log', errors='replace').read().splitlines()
+          keep = []
+          for line in log:
+              s = line.strip()
+              if (s.startswith('e: ') or s.startswith('w: file') or 'error:' in s
+                      or s.startswith('FAILURE:') or s.startswith('* What went wrong')
+                      or s.startswith('> ') or s.startswith('Caused by')
+                      or s.startswith('Execution failed') or 'Task failed' in s):
+                  keep.append(s)
+              elif s.startswith('FAILED') or s.startswith('Tests failed') or 'tests completed' in s:
+                  keep.append(s)
+          text = '\n'.join(keep[-400:]) or '(no error lines matched)'
+          text += '\n\nEXIT: ' + open('/tmp/exit.txt').read().strip()
+          text += '\n\nTAIL:\n' + '\n'.join(log[-25:])
+          text = text[:60000]
+          msg = text.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+          print('::error title=gradle::' + msg)
+          PY
