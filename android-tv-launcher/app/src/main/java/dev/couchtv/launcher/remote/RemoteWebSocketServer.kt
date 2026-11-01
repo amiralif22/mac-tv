@@ -209,7 +209,7 @@ class RemoteWebSocketServer(
 
     val clientCount: Int get() = clients.size
 
-    fun broadcast(json: String) {
+    fun broadcastToPaired(json: String) {
         clients.forEach { (connection, client) ->
             if (client.paired && connection.isOpen) {
                 runCatching { connection.send(json) }
@@ -235,11 +235,11 @@ class RemoteWebSocketServer(
 
     private fun sendStateNow() {
         lastStateAt = System.currentTimeMillis()
-        broadcast(Protocol.state(stateProvider()))
+        broadcastToPaired(Protocol.state(stateProvider()))
     }
 
     fun broadcastApps() {
-        broadcast(Protocol.apps(appsProvider()))
+        broadcastToPaired(Protocol.apps(appsProvider()))
     }
 
     /** Tells a revoked device its token is dead, then closes its sockets. */
