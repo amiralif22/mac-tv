@@ -2,7 +2,9 @@ package dev.couchtv.launcher.remote
 
 import java.security.MessageDigest
 import java.security.SecureRandom
-import java.util.Base64
+import java.util.Locale
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 /**
  * Pairing arithmetic, with no Android in it so it can be tested: the six-digit code shown on the TV,
@@ -28,20 +30,25 @@ object Pairing {
     fun newCode(now: Long = System.currentTimeMillis(), previous: String? = null): Code {
         var value: String
         do {
-            value = String.format("%06d", random.nextInt(1_000_000))
+            value = String.format(Locale.ROOT, "%06d", random.nextInt(1_000_000))
         } while (value == previous)
         return Code(value, now, now + CODE_TTL_MS)
     }
 
+    /**
+     * 24 random bytes as 32 URL-safe characters. Kotlin's own Base64 is used rather than
+     * `java.util.Base64`, which needs API 26 and this app supports 24.
+     */
+    @OptIn(ExperimentalEncodingApi::class)
     fun newToken(): String {
         val bytes = ByteArray(TOKEN_BYTES)
         random.nextBytes(bytes)
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes)
+        return Base64.UrlSafe.encode(bytes)
     }
 
     fun digest(token: String): String {
         val bytes = MessageDigest.getInstance("SHA-256").digest(token.toByteArray(Charsets.UTF_8))
-        return bytes.joinToString("") { "%02x".format(it) }
+        return bytes.joinToString("") { String.format(Locale.ROOT, "%02x", it) }
     }
 
     /** Length-independent, value-safe comparison. */

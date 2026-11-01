@@ -72,6 +72,12 @@ jobs:
                   body += open(f, errors='replace').read()[:60000] + '\n'
               except OSError:
                   body += '(no ' + f + ')\n'
+          body += '```\n\n### test results\n\n```\n'
+          import glob
+          for f in sorted(glob.glob('app/build/test-results/testDebugUnitTest/*.xml')):
+              txt = open(f, errors='replace').read()
+              if 'failure' in txt or 'error' in txt:
+                  body += '--- ' + f + '\n' + txt[:20000] + '\n'
           body += '```\n\nEXIT: ' + open('/tmp/exit.txt').read().strip() + '\n'
           open('/tmp/body.md','w').write(body[:200000])
           PY
