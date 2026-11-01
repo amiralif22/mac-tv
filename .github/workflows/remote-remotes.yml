@@ -66,7 +66,13 @@ jobs:
           body += '\n'.join(keep[:1500]) or '(nothing matched)'
           body += '\n\n--- tail ---\n'
           body += '\n'.join(l[:600] for l in log[-40:])
-          body += '\n```\n\nEXIT: ' + open('/tmp/exit.txt').read().strip() + '\n'
+          body += '\n```\n\n### lint\n\n```\n'
+          for f in ['app/build/reports/lint-results-debug.txt', 'app/build/reports/lint-results-debug.xml']:
+              try:
+                  body += open(f, errors='replace').read()[:60000] + '\n'
+              except OSError:
+                  body += '(no ' + f + ')\n'
+          body += '```\n\nEXIT: ' + open('/tmp/exit.txt').read().strip() + '\n'
           open('/tmp/body.md','w').write(body[:200000])
           PY
           gh api -X POST "repos/${{ github.repository }}/commits/${{ github.sha }}/comments" \
