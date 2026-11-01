@@ -71,10 +71,31 @@ data class DeviceProfile(
     }
 }
 
-/** The overscan-safe inset Android TV recommends, from Leanback's own guidelines. */
+/**
+ * The overscan-safe inset Android TV recommends: 5 % of the shortest side, grown by any display
+ * cutout. androidx Leanback exposes no inset helper (the support-library `Settings` did), so the
+ * guideline is applied here directly.
+ */
 fun View.applyTvSafeInsets() {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) return
-    val safe = runCatching { androidx.leanback.system.Settings.getInstance(context).safeInsetLeft }.getOrDefault(0)
+    val metrics = resources.displayMetrics
+    val overscan = (minOf(metrics.widthPixels, metrics.heightPixels) * OVERSCAN_FRACTION).toInt()
+    val cutout = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        runCatching {
+            val display = rootWindowInsets?.displayCutout ?: return@runCatching 0
+            maxOf(
+                display.safeInsetLeft,
+                display.safeInsetTop,
+                display.safeInsetRight,
+                display.safeInsetBottom,
+            )
+        }.getOrDefault(0)
+    } else {
+        0
+    }
+    val safe = maxOf(overscan, cutout)
     if (safe <= 0) return
     setPadding(safe, safe, safe, safe)
 }
+
+/** TVs overscan by about 5 % on every edge; nothing else does. */
+private const val OVERSCAN_FRACTION = 0.05f

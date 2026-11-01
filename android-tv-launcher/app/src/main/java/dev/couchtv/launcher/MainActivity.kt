@@ -19,6 +19,7 @@ import dev.couchtv.launcher.ui.Screen
 import dev.couchtv.launcher.ui.UiKeys
 import dev.couchtv.launcher.ui.theme.CouchTheme
 import dev.couchtv.launcher.util.DeviceProfile
+import dev.couchtv.launcher.util.applyTvSafeInsets
 
 /**
  * The launcher's only activity.
@@ -49,6 +50,8 @@ class MainActivity : ComponentActivity() {
         vm.inputRouter.localKeyHandler = { event -> superDispatch(event) }
 
         val profile = DeviceProfile.of(this)
+        // A TV crops the edges of the picture; keep the launcher's content inside the safe area.
+        if (profile.kind == DeviceProfile.Kind.LEANBACK) window.decorView.applyTvSafeInsets()
         setContent {
             val state by vm.state.collectAsStateWithLifecycle()
             CouchTheme(mode = state.settings.theme, profile = profile) {
