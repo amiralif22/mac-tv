@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="canvas">#FF07080B</color>
+    <color name="phosphor">#FF3DDC84</color>
+    <color name="icon_background">#FF10131B</color>
+</resources>

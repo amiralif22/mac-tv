@@ -1,0 +1,67 @@
+# XcodeGen specification for Couch Remote.
+#
+# The project file is generated, never committed: one YAML file is reviewable in a pull request,
+# whereas a .pbxproj is a merge conflict waiting to happen. CI runs `xcodegen generate` before
+# building, and so should you:
+#
+#     brew install xcodegen
+#     cd remote-ios && xcodegen generate && open CouchRemote.xcodeproj
+#
+# `Info.plist` is hand-maintained (it carries the privacy descriptions App Review reads), so the
+# target is told to use it rather than have XcodeGen synthesise one.
+#
+name: CouchRemote
+
+options:
+  bundleIdPrefix: dev.couchtv
+  deploymentTarget:
+    iOS: "15.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+packages:
+  RemoteKit:
+    path: RemoteKit
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    CODE_SIGN_STYLE: Automatic
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+
+targets:
+  CouchRemote:
+    type: application
+    platform: iOS
+    deploymentTarget: "15.0"
+    sources:
+      - path: CouchRemote
+        excludes:
+          - "Support/Info.plist"
+          - "Support/Resources/**"
+    resources:
+      - path: CouchRemote/Support/Resources/Assets.xcassets
+    dependencies:
+      - package: RemoteKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.couchtv.remote
+        PRODUCT_NAME: Couch Remote
+        INFOPLIST_FILE: CouchRemote/Support/Info.plist
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SUPPORTS_MACCATALYST: NO
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        SWIFT_STRICT_CONCURRENCY: minimal
+
+schemes:
+  CouchRemote:
+    build:
+      targets:
+        CouchRemote: all
+    run:
+      config: Debug
+    archive:
+      config: Release

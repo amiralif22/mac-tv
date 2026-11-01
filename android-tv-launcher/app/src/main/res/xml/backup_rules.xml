@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Back up the choices, never the credentials: the streaming token lives in the Keystore. -->
+<full-backup-content>
+    <include domain="file" path="datastore/" />
+    <exclude domain="sharedpref" path="secure_prefs.xml" />
+</full-backup-content>

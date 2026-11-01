@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android TV home-screen banner (320x180): the wordmark's colour blocks and the set glyph. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp"
+    android:height="180dp"
+    android:viewportWidth="320"
+    android:viewportHeight="180">
+    <path android:fillColor="#0A0B0E" android:pathData="M0,0 h320 v180 h-320 z" />
+    <path android:fillColor="#14161C" android:pathData="M0,120 h320 v60 h-320 z" />
+    <path
+        android:fillColor="#2B2A2E"
+        android:pathData="M34,54 h96 a10,10 0 0 1 10,10 v60 a10,10 0 0 1 -10,10 h-96 a10,10 0 0 1 -10,-10 v-60 a10,10 0 0 1 10,-10 z" />
+    <path
+        android:fillColor="#0A0B0E"
+        android:pathData="M38,60 h88 a5,5 0 0 1 5,5 v48 a5,5 0 0 1 -5,5 h-88 a5,5 0 0 1 -5,-5 v-48 a5,5 0 0 1 5,-5 z" />
+    <path android:fillColor="#3DDC84" android:pathData="M70,74 l26,15 -26,15 z" />
+    <path android:fillColor="#C69A52" android:pathData="M66,140 h36 v6 h-36 z" />
+    <path
+        android:fillColor="#ECE0C6"
+        android:pathData="M162,72 h74 v10 h-74 z M162,92 h104 v10 h-104 z" />
+    <path android:fillColor="#3DDC84" android:pathData="M162,112 h46 v8 h-46 z" />
+</vector>

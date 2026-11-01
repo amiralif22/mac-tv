@@ -1,0 +1,215 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * The Mac TV palette, carried across: charcoal and near-black for the dark theme, cream and ink for
+ * the light one, phosphor green for anything live, brass for detail. The site deliberately uses the
+ * system font for reading and a monospace for labels — the Mac app does the same in miniature.
+ */
+:root {
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, system-ui,
+    sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, system-ui,
+    sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+:root {
+  /* Light: cream paper, ink type, the site's phosphor. */
+  --canvas: 246 241 231;
+  --panel: 255 255 255;
+  --raised: 241 234 220;
+  --ink: 29 26 23;
+  --dim: 91 82 71;
+  --faint: 122 114 104;
+  --line: 29 26 23;
+  --phosphor: 31 122 74;
+  --brass: 126 94 46;
+}
+
+.dark {
+  /* Dark: the launcher's canvas, white type, the CRT's green. */
+  --canvas: 7 8 11;
+  --panel: 15 17 22;
+  --raised: 22 25 32;
+  --ink: 245 245 247;
+  --dim: 158 163 175;
+  --faint: 110 116 130;
+  --line: 255 255 255;
+  --phosphor: 61 220 132;
+  --brass: 198 154 82;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  scroll-padding-top: 96px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+body {
+  margin: 0;
+  background: rgb(var(--canvas));
+  color: rgb(var(--ink));
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: rgb(var(--phosphor) / 0.25);
+}
+
+:focus-visible {
+  outline: 2px solid rgb(var(--phosphor));
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* A hairline that reads as an edge rather than a border. */
+.hairline {
+  border: 1px solid rgb(var(--line) / 0.12);
+}
+
+.dark .hairline {
+  border-color: rgb(var(--line) / 0.14);
+}
+
+/* The frosted glass the launcher uses for controls: an edge of light on top, a soft blur below. */
+.glass {
+  background: linear-gradient(180deg, rgb(var(--line) / 0.07), rgb(var(--line) / 0.04));
+  box-shadow: inset 0 1px 0 rgb(var(--line) / 0.16);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+}
+
+/* Headline tracking, like tvOS display type. */
+.display {
+  font-family: var(--font-display);
+  letter-spacing: -0.035em;
+  font-weight: 800;
+  line-height: 0.95;
+  text-wrap: balance;
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Long-form docs: generous measure, quiet rules. */
+.prose-couch h2 {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 2.2rem 0 0.75rem;
+}
+
+.prose-couch h3 {
+  font-size: 1.05rem;
+  font-weight: 650;
+  margin: 1.6rem 0 0.4rem;
+}
+
+.prose-couch p {
+  color: rgb(var(--dim));
+  line-height: 1.7;
+  margin: 0 0 1rem;
+}
+
+.prose-couch code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  background: rgb(var(--line) / 0.07);
+  border: 1px solid rgb(var(--line) / 0.1);
+  border-radius: 6px;
+  padding: 0.12em 0.34em;
+}
+
+.prose-couch pre {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.6;
+  background: rgb(var(--panel));
+  border: 1px solid rgb(var(--line) / 0.12);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  overflow-x: auto;
+  margin: 0 0 1.2rem;
+  color: rgb(var(--ink));
+}
+
+.prose-couch pre code {
+  background: none;
+  border: 0;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* The TV in the hero: a bezel, a screen, a stand. Everything inside is CSS so it stays crisp. */
+.tv-bezel {
+  background: linear-gradient(180deg, #3a3b42, #23242a 55%, #17181d);
+  box-shadow:
+    inset 0 2px 0 rgb(255 255 255 / 0.16),
+    inset 0 -2px 6px rgb(0 0 0 / 0.5),
+    0 50px 90px -40px rgb(0 0 0 / 0.75);
+}
+
+.tv-screen {
+  background: #07080b;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06);
+}
+
+.tv-glare {
+  background:
+    repeating-linear-gradient(180deg, rgb(0 0 0 / 0.05) 0 1px, transparent 1px 3px),
+    radial-gradient(120% 120% at 50% 50%, transparent 62%, rgb(0 0 0 / 0.45)),
+    radial-gradient(60% 40% at 25% 12%, rgb(255 255 255 / 0.08), transparent 70%);
+}
+
+/* The progress line under a Continue Watching poster. */
+.progress-track {
+  background: rgb(0 0 0 / 0.55);
+}
+
+.progress-fill {
+  background: rgb(var(--phosphor));
+}
+
+/* Print: the docs are worth keeping. */
+@media print {
+  nav,
+  footer,
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: white;
+    color: black;
+  }
+}
