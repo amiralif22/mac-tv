@@ -118,7 +118,9 @@ fun LauncherRoot(vm: LauncherViewModel, state: LauncherViewModel.UiState) {
                 )
             }
 
-            state.saverActive -> ScreensaverOverlay(state)
+            if (state.saverActive) {
+                ScreensaverOverlay(state)
+            }
 
             if (state.toast != null) {
                 ToastOverlay(state.toast) { vm.clearToast() }

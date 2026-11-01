@@ -39,8 +39,11 @@ class ProtocolTest {
     @Test
     fun `pointer deltas are clamped and batches are capped`() {
         val pointer = Json.parseToJsonElement(Protocol.pointer(9.5f, -9.5f, ts = 7)).jsonObject
-        assertEquals(1f, pointer["dx"]?.jsonPrimitive?.content?.toFloat(), 0.0001f)
-        assertEquals(-1f, pointer["dy"]?.jsonPrimitive?.content?.toFloat(), 0.0001f)
+        // JUnit's float overload needs non-null floats; a missing field shows up as NaN.
+        val dx = pointer["dx"]?.jsonPrimitive?.content?.toFloat() ?: Float.NaN
+        val dy = pointer["dy"]?.jsonPrimitive?.content?.toFloat() ?: Float.NaN
+        assertEquals(1f, dx, 0.0001f)
+        assertEquals(-1f, dy, 0.0001f)
 
         val samples = (1..20).map { Protocol.Sample(dx = 0.01f, dy = 0.02f, ts = it.toLong()) }
         val batch = Json.parseToJsonElement(Protocol.pointerBatch(samples)).jsonObject

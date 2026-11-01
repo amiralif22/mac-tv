@@ -169,7 +169,7 @@ class RemoteClient(
         if (id.isNotEmpty()) vault.save(id, welcome.token)
         attempt = 0
         listener.onLinkState(LinkState.Connected(welcome.name))
-        listener.onServerMessage(Protocol.ServerMessage.Welcome(welcome))
+        listener.onServerMessage(welcome)
     }
 
     private fun scheduleReconnect() {

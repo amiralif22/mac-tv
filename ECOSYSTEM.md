@@ -117,7 +117,7 @@ reason a mapper is ever correct.
 | Layer | TV (Kotlin) | Android | iOS |
 |---|---|---|---|
 | Transport | `RemoteWebSocketServer` | `RemoteClient` | `RemoteConnection` |
-| Protocol | `Protocol.kt` | `Protocol.kt` (mirror) | `RemoteKit/Protocol.swift` |
+| Protocol | `Protocol.kt` | `Protocol.kt` (mirror) | `RemoteKit/Wire.swift` (`Wire`) |
 | Feel | `Cursor` + `InputRouter` | `Touchpad` + `PointerGain` | `TouchpadView` + `PointerBallistics` |
 
 The touchpad arithmetic is deliberately identical on both phones: 1.15 gain, 0.55 smoothing, a 0.6 px

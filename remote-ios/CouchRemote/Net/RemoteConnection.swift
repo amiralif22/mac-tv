@@ -36,8 +36,8 @@ enum LinkState: Equatable {
 @MainActor
 final class RemoteConnection: ObservableObject {
     @Published private(set) var state: LinkState = .idle
-    @Published private(set) var tvState = Protocol.TVState()
-    @Published private(set) var apps: [Protocol.TVApp] = []
+    @Published private(set) var tvState = Wire.TVState()
+    @Published private(set) var apps: [Wire.TVApp] = []
     @Published private(set) var roundTripMs: Int?
     @Published private(set) var pairingRequired = false
     /// Wrong codes so far for this TV, so the pairing screen can explain itself.
@@ -83,7 +83,7 @@ final class RemoteConnection: ObservableObject {
         session?.invalidateAndCancel()
         session = nil
         state = .idle
-        tvState = Protocol.TVState()
+        tvState = Wire.TVState()
         apps = []
         pairingRequired = false
         roundTripMs = nil
@@ -127,7 +127,7 @@ final class RemoteConnection: ObservableObject {
             while !Task.isCancelled {
                 try? await Task.sleep(nanoseconds: 15 * 1_000_000_000)
                 guard !Task.isCancelled else { return }
-                self?.send(Protocol.ping())
+                self?.send(Wire.ping())
             }
         }
     }
@@ -181,7 +181,7 @@ final class RemoteConnection: ObservableObject {
         state = .handshaking
         let token = tv.flatMap { store.token(for: $0.id) }
         send(
-            Protocol.hello(
+            Wire.hello(
                 deviceId: deviceId,
                 name: deviceName,
                 platform: "ios",
@@ -194,7 +194,7 @@ final class RemoteConnection: ObservableObject {
     func submitPairingCode(_ code: String) {
         guard let tv else { return }
         state = .handshaking
-        send(Protocol.pair(pin: code, deviceId: deviceId, name: deviceName, platform: "ios"))
+        send(Wire.pair(pin: code, deviceId: deviceId, name: deviceName, platform: "ios"))
         _ = tv
     }
 
@@ -209,23 +209,23 @@ final class RemoteConnection: ObservableObject {
     }
 
     // Input, in the vocabulary the rest of the app speaks.
-    func key(_ key: Protocol.Key, hold: Bool = false) { send(Protocol.key(key, hold: hold)) }
-    func pointer(dx: Double, dy: Double) { send(Protocol.pointer(dx: dx, dy: dy)) }
-    func pointer(samples: [Protocol.PointerSample]) { send(Protocol.pointerBatch(samples)) }
-    func click() { send(Protocol.click()) }
-    func longPress() { send(Protocol.longPress()) }
-    func scroll(dy: Double) { send(Protocol.scroll(dy: dy)) }
-    func type(_ text: String) { send(Protocol.text(text)) }
-    func backspace(_ count: Int = 1) { send(Protocol.backspace(count)) }
-    func submit() { send(Protocol.submit()) }
-    func voice(_ text: String) { send(Protocol.voice(text)) }
-    func launch(_ package: String) { send(Protocol.launch(package: package)) }
-    func command(_ action: String, query: String? = nil) { send(Protocol.command(action, query: query)) }
+    func key(_ key: Wire.Key, hold: Bool = false) { send(Wire.key(key, hold: hold)) }
+    func pointer(dx: Double, dy: Double) { send(Wire.pointer(dx: dx, dy: dy)) }
+    func pointer(samples: [Wire.PointerSample]) { send(Wire.pointerBatch(samples)) }
+    func click() { send(Wire.click()) }
+    func longPress() { send(Wire.longPress()) }
+    func scroll(dy: Double) { send(Wire.scroll(dy: dy)) }
+    func type(_ text: String) { send(Wire.text(text)) }
+    func backspace(_ count: Int = 1) { send(Wire.backspace(count)) }
+    func submit() { send(Wire.submit()) }
+    func voice(_ text: String) { send(Wire.voice(text)) }
+    func launch(_ package: String) { send(Wire.launch(package: package)) }
+    func command(_ action: String, query: String? = nil) { send(Wire.command(action, query: query)) }
 
     // MARK: - Receiving
 
     private func handle(_ text: String) async {
-        guard let message = Protocol.decode(text) else { return }
+        guard let message = Wire.decode(text) else { return }
         switch message {
         case let .welcome(welcome), let .paired(welcome):
             store.save(token: welcome.token, for: welcome.device.isEmpty ? (tv?.id ?? "") : welcome.device)
@@ -243,7 +243,7 @@ final class RemoteConnection: ObservableObject {
             pairingRequired = attempts != nil
             if let attempts {
                 // The TV counts down from 5; mirror the number it reports rather than our own tally.
-                pairingAttempts = Protocol.maxPairingAttempts - attempts
+                pairingAttempts = Wire.maxPairingAttempts - attempts
             }
             lastError = message ?? Self.friendly(code)
             if code == "auth" {
@@ -278,7 +278,7 @@ final class RemoteConnection: ObservableObject {
             }
 
         case let .pong(ts, _):
-            let now = Protocol.nowMillis()
+            let now = Wire.nowMillis()
             roundTripMs = Int(max(0, now - ts))
         }
     }

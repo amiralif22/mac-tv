@@ -162,7 +162,10 @@ private fun AppPicker(
         else -> 3
     }
     val selectedSet = remember(selected) { selected.toSet() }
-    val rows = remember(apps, columns) { pickerRows(apps, columns) }
+    // Resolve the category headers in a composable scope: pickerRows() is pure, so it can be
+    // remembered, and stringResource() cannot be called from inside a remember lambda.
+    val titles = AppCategory.entries.associateWith { stringResource(titleRes(it)) }
+    val rows = remember(apps, columns, titles) { pickerRows(apps, columns, titles) }
     val focusSizes = remember(rows) {
         rows.map {
             when (it.kind) {
@@ -284,12 +287,16 @@ private fun activate(
 }
 
 /** Category headers plus chunks of [columns] apps; headers carry zero focusable width. */
-private fun pickerRows(apps: List<AppEntry>, columns: Int): List<PickerRow> = buildList {
+private fun pickerRows(
+    apps: List<AppEntry>,
+    columns: Int,
+    titles: Map<AppCategory, String>,
+): List<PickerRow> = buildList {
     add(PickerRow("controls", PickerRowKind.CONTROLS))
     AppCategory.entries.forEach { category ->
         val inCategory = apps.filter { it.category == category }
         if (inCategory.isEmpty()) return@forEach
-        add(PickerRow("header:${category.name}", PickerRowKind.HEADER, titleFor(category)))
+        add(PickerRow("header:${category.name}", PickerRowKind.HEADER, titles[category].orEmpty()))
         inCategory.chunked(columns).forEachIndexed { index, chunk ->
             add(PickerRow("row:${category.name}:$index", PickerRowKind.APPS, apps = chunk))
         }
@@ -297,12 +304,12 @@ private fun pickerRows(apps: List<AppEntry>, columns: Int): List<PickerRow> = bu
     add(PickerRow("footer", PickerRowKind.FOOTER))
 }
 
-private fun titleFor(category: AppCategory): String = when (category) {
-    AppCategory.STREAMING -> stringResource(R.string.category_streaming)
-    AppCategory.GAMES -> stringResource(R.string.category_games)
-    AppCategory.UTILITIES -> stringResource(R.string.category_utilities)
-    AppCategory.SYSTEM -> stringResource(R.string.category_system)
-    AppCategory.OTHER -> stringResource(R.string.category_other)
+private fun titleRes(category: AppCategory): Int = when (category) {
+    AppCategory.STREAMING -> R.string.category_streaming
+    AppCategory.GAMES -> R.string.category_games
+    AppCategory.UTILITIES -> R.string.category_utilities
+    AppCategory.SYSTEM -> R.string.category_system
+    AppCategory.OTHER -> R.string.category_other
 }
 
 @Composable

@@ -8,7 +8,7 @@ import RemoteKit
 /// `error`/`not-allowed`, which the remote shows rather than swallowing.
 struct AppsSheet: View {
     @ObservedObject var connection: RemoteConnection
-    let apps: [RemoteKit.Protocol.TVApp]
+    let apps: [Wire.TVApp]
     @Environment(\.dismiss) private var dismiss
 
     private let columns = [GridItem(.adaptive(minimum: 84), spacing: 12)]
@@ -61,7 +61,7 @@ struct AppsSheet: View {
     }
 
     /// Favourites first, then alphabetical — the same order the TV shows.
-    private var sorted: [RemoteKit.Protocol.TVApp] {
+    private var sorted: [Wire.TVApp] {
         apps.sorted {
             if $0.favourite != $1.favourite { return $0.favourite }
             return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
@@ -70,7 +70,7 @@ struct AppsSheet: View {
 }
 
 private struct AppIcon: View {
-    let app: RemoteKit.Protocol.TVApp
+    let app: Wire.TVApp
     let connection: RemoteConnection
     @State private var image: UIImage?
 

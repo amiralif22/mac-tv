@@ -39,7 +39,7 @@ CI runs both: `swift test` on every platform, and `xcodebuild` for the app on a 
 | `CouchRemote/Screens/TouchpadView.swift` | UIKit touchpad: pointer samples at 60 Hz, two-finger scroll, tap and long-press |
 | `CouchRemote/Screens/RemoteScreen.swift` | D-pad, transport, system row, sheets |
 | `CouchRemote/Screens/PairSheet.swift` | Six-box code entry with paste and autofill |
-| `RemoteKit/Sources/RemoteKit/Protocol.swift` | The v1 codec, shared with the TV's Kotlin implementation |
+| `RemoteKit/Sources/RemoteKit/Wire.swift` | The v1 codec (`Wire`), shared with the TV's Kotlin implementation |
 
 `shared/remote-protocol.md` is the specification; if this app and that document disagree, the
 document wins.

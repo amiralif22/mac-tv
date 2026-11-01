@@ -13,6 +13,7 @@ import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.concurrent.TimeUnit
+import dev.couchtv.launcher.streaming.StreamingServiceAdapter.AuthResult
 
 /**
  * Nuvio, the first streaming integration.

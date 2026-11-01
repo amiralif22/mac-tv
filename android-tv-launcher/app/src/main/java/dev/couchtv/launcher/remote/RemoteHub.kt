@@ -80,7 +80,7 @@ object RemoteHub {
         // The WebSocket port: the requested one, then the next three. A TV box sometimes has a
         // service on 8765 already; the remote app discovers whichever port mDNS advertises.
         var bound: RemoteWebSocketServer? = null
-        var lastError: Exception? = null
+        var lastError: Throwable? = null
         for (candidate in requestedWsPort until requestedWsPort + 4) {
             val instance = RemoteWebSocketServer(
                 port = candidate,
@@ -184,7 +184,7 @@ object RemoteHub {
     }
 
     fun broadcastToast(text: String) {
-        server?.broadcast(Protocol.toast(text))
+        server?.broadcastToPaired(Protocol.toast(text))
     }
 
     fun revoke(deviceId: String) {

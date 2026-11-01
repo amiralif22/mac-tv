@@ -10,6 +10,8 @@ on:
     paths:
       - "android-tv-launcher/**"
       - "shared/**"
+      - ".github/workflows/android.yml"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -28,7 +30,14 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - uses: android-actions/setup-android@v3
+      # v4 defaults to `platform-tools` only. v3's default was
+      # `tools platform-tools`, and Google removed the legacy `tools` package, so
+      # sdkmanager exits 1 ("Failed to find package 'tools'") and the job dies
+      # here before Gradle ever runs. Name what the build actually needs:
+      # app/build.gradle.kts compiles against SDK 34 with AGP 8.5.2.
+      - uses: android-actions/setup-android@v4
+        with:
+          packages: "platform-tools platforms;android-34 build-tools;34.0.0"
 
       - uses: gradle/actions/setup-gradle@v4
         with:
@@ -46,6 +55,10 @@ jobs:
       - name: Check the APK is under the size budget
         run: |
           APK=$(find app/build/outputs/apk/debug -name "*.apk" | head -1)
+          if [ -z "$APK" ]; then
+            echo "No debug APK was produced by :app:assembleDebug"
+            exit 1
+          fi
           SIZE=$(stat -c%s "$APK")
           echo "APK: $APK ($((SIZE/1024/1024)) MB)"
           test "$SIZE" -lt 31457280 || (echo "APK exceeds 30 MB" && exit 1)

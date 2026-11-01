@@ -2,6 +2,7 @@ package dev.couchtv.remote.net
 
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.add
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonArray
@@ -182,7 +183,7 @@ object Protocol {
     fun decode(text: String): ServerMessage? {
         val root = runCatching { json.parseToJsonElement(text).jsonObject }.getOrNull() ?: return null
         return when (root.string("t")) {
-            "welcome" -> welcome(root)?.let { ServerMessage.Welcome(it) }
+            "welcome" -> welcome(root)
             "paired" -> welcome(root)?.let { ServerMessage.Paired(it) }
             "pair-required" -> ServerMessage.PairRequired(
                 device = root.string("device").orEmpty(),

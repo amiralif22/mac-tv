@@ -138,11 +138,9 @@ private fun ContentBackdrop(vm: LauncherViewModel, state: LauncherViewModel.UiSt
 
     val accent = when (item) {
         is HomeItem.App -> Color(item.entry.accent)
-        is HomeItem.Media -> Color(
-            item.item.accent?.let { hex ->
-                runCatching { Color(android.graphics.Color.parseColor(hex)) }.getOrDefault(palette.accentDeep)
-            } ?: palette.accentDeep
-        )
+        is HomeItem.Media -> item.item.accent?.let { hex ->
+            runCatching { Color(android.graphics.Color.parseColor(hex)) }.getOrDefault(palette.accentDeep)
+        } ?: palette.accentDeep
 
         else -> palette.accentDeep
     }
@@ -399,7 +397,7 @@ private fun ActionTile(
                     width = tvDp(3f),
                     color = if (focused) Color.Transparent else palette.hairline,
                     shape = shape,
-                )
+                ),
             contentAlignment = Alignment.Center,
         ) {
             Text(

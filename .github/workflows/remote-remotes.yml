@@ -12,6 +12,8 @@ on:
       - "remote-android/**"
       - "remote-ios/**"
       - "shared/**"
+      - ".github/workflows/remote-remotes.yml"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -31,7 +33,11 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - uses: android-actions/setup-android@v3
+      # v4 defaults to `platform-tools` only; v3 asked for the legacy `tools`
+      # package that Google has since removed, which fails the whole action.
+      - uses: android-actions/setup-android@v4
+        with:
+          packages: "platform-tools platforms;android-34 build-tools;34.0.0"
 
       - uses: gradle/actions/setup-gradle@v4
         with:
@@ -48,7 +54,11 @@ jobs:
 
   ios:
     name: iOS remote
-    runs-on: macos-14
+    # macos-14 is being retired: jobs on that label are cancelled during the
+    # brownout windows and stop working entirely on 2026-11-02. macos-15 is the
+    # current GA Apple Silicon image and ships an Xcode that still builds for the
+    # iOS 15 deployment target this app declares.
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
 

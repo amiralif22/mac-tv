@@ -45,6 +45,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 import dev.couchtv.launcher.R
+import androidx.core.graphics.drawable.toBitmap
 
 /**
  * The launcher's brain.
@@ -919,7 +920,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     override fun iconFor(packageName: String): ByteArray? = runCatching {
         val drawable = catalog.icon(packageName) ?: return null
-        val bitmap = androidx.core.graphics.drawable.toBitmap(drawable, 96, 96)
+        val bitmap = drawable.toBitmap(96, 96)
         val output = java.io.ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, output)
         bitmap.recycle()

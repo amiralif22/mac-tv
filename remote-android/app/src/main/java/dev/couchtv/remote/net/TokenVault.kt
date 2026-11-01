@@ -25,9 +25,12 @@ internal object TokenFraming {
     /** `iv || body` — the vector is not secret, so it travels with the ciphertext. */
     fun pack(iv: ByteArray, body: ByteArray): ByteArray = iv + body
 
-    /** Returns the vector and the ciphertext, or null when the blob is too short to be valid. */
+    /**
+     * Returns the vector and the ciphertext, or null when the blob is shorter than the vector.
+     * An empty body is legal, so `split(pack(iv, ByteArray(0)))` round trips.
+     */
     fun split(packed: ByteArray): Pair<ByteArray, ByteArray>? {
-        if (packed.size <= IV_BYTES) return null
+        if (packed.size < IV_BYTES) return null
         return packed.copyOfRange(0, IV_BYTES) to packed.copyOfRange(IV_BYTES, packed.size)
     }
 }

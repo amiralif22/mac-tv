@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Compose draws everything; the window itself is the same near-black as the Mac app's canvas
          (#0A0B0E), so there is no flash of a different colour on launch. -->
     <style name="Theme.CouchTv" parent="android:Theme.Material.NoActionBar">
@@ -7,6 +7,6 @@
         <item name="android:colorBackground">@color/canvas</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+        <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="27">shortEdges</item>
     </style>
 </resources>
