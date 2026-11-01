@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Back up the choices, never the credentials: the streaming token lives in the Keystore. -->
 <full-backup-content>
+    <!-- datastore/ holds the choices; the streaming token is in the Keystore and is never
+         backed up, and listing only datastore/ keeps everything else out of the archive. -->
     <include domain="file" path="datastore/" />
-    <exclude domain="sharedpref" path="secure_prefs.xml" />
 </full-backup-content>

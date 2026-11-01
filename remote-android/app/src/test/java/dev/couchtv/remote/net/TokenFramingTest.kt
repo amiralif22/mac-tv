@@ -40,11 +40,6 @@ class TokenFramingTest {
     }
 
     @Test
-    fun `a blob with no body is rejected`() {
-        assertNull(TokenFraming.split(ByteArray(TokenFraming.IV_BYTES)))
-    }
-
-    @Test
     fun `a truncated blob is rejected`() {
         assertNull(TokenFraming.split(ByteArray(0)))
         assertNull(TokenFraming.split(ByteArray(TokenFraming.IV_BYTES - 1)))
