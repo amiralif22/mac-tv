@@ -263,7 +263,9 @@ fun MediaPoster(
     val palette = LocalPalette.current
     val scale = focusScale(focused)
     val shape = RoundedCornerShape(tvDp(14f))
-    val accent = Color(item.accent ?: 0xFF3A3F4A.toInt())
+    val accent = item.accent?.let { hex ->
+        runCatching { Color(android.graphics.Color.parseColor(hex)) }.getOrNull()
+    } ?: Color(0xFF3A3F4A)
 
     Column(
         modifier = modifier

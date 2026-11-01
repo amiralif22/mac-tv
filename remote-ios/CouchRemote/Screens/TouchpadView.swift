@@ -65,7 +65,7 @@ struct TouchpadView: View {
 private struct TouchpadSurface: UIViewRepresentable {
     var sensitivity: Double
     var onTouchChanged: (Bool) -> Void
-    var onPointer: ([RemoteKit.Protocol.PointerSample]) -> Void
+    var onPointer: ([Wire.PointerSample]) -> Void
     var onClick: () -> Void
     var onLongPress: () -> Void
     var onScroll: (Double) -> Void
@@ -90,7 +90,7 @@ private struct TouchpadSurface: UIViewRepresentable {
         var sensitivity: Double
 
         private var ballistics = PointerBallistics()
-        private var pending: [RemoteKit.Protocol.PointerSample] = []
+        private var pending: [Wire.PointerSample] = []
         private var displayLink: CADisplayLink?
         private var lastPoint: CGPoint?
         private var scrollBaseline: CGFloat?
@@ -161,7 +161,7 @@ private struct TouchpadSurface: UIViewRepresentable {
                 )
                 lastPoint = location
                 if let delta {
-                    pending.append(RemoteKit.Protocol.PointerSample(dx: delta.dx, dy: delta.dy))
+                    pending.append(Wire.PointerSample(dx: delta.dx, dy: delta.dy))
                 }
 
             case .ended, .cancelled, .failed:
@@ -199,7 +199,7 @@ private struct TouchpadSurface: UIViewRepresentable {
 
         @objc func flush() {
             guard !pending.isEmpty else { return }
-            let batch = Array(pending.suffix(RemoteKit.Protocol.maxPointerBatch))
+            let batch = Array(pending.suffix(Wire.maxPointerBatch))
             pending.removeAll(keepingCapacity: true)
             callbacks.onPointer(batch)
         }

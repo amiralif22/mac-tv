@@ -8,7 +8,7 @@ import Foundation
 ///    returns a `String` and clamps its own inputs to the protocol's limits.
 /// 2. **Decoding is forgiving.** Unknown types, unknown keys and wrong types return `nil` rather
 ///    than throwing, so a newer TV can talk to this app without an update.
-public enum Protocol {
+public enum Wire {
     public static let version = 1
     public static let maxText = 500
     public static let maxBackspace = 32
@@ -137,6 +137,24 @@ public enum Protocol {
         public var width: Int
         public var height: Int
         public var caps: [String]
+
+        public init(
+            device: String,
+            token: String,
+            name: String,
+            model: String,
+            width: Int,
+            height: Int,
+            caps: [String]
+        ) {
+            self.device = device
+            self.token = token
+            self.name = name
+            self.model = model
+            self.width = width
+            self.height = height
+            self.caps = caps
+        }
     }
 
     public struct TVState: Equatable, Sendable {
@@ -149,6 +167,27 @@ public enum Protocol {
         public var pointer: Bool?
         public var pin: Bool?
 
+        /// Every field is optional, so the app can start from an empty state.
+        public init(
+            screen: String? = nil,
+            focusKind: String? = nil,
+            focusLabel: String? = nil,
+            media: Media? = nil,
+            volume: Float? = nil,
+            muted: Bool? = nil,
+            pointer: Bool? = nil,
+            pin: Bool? = nil
+        ) {
+            self.screen = screen
+            self.focusKind = focusKind
+            self.focusLabel = focusLabel
+            self.media = media
+            self.volume = volume
+            self.muted = muted
+            self.pointer = pointer
+            self.pin = pin
+        }
+
         public struct Media: Equatable, Sendable {
             public var playing: Bool
             public var title: String
@@ -156,6 +195,22 @@ public enum Protocol {
             public var positionMs: Int64
             public var durationMs: Int64
             public var app: String?
+
+            public init(
+                playing: Bool = false,
+                title: String = "",
+                subtitle: String? = nil,
+                positionMs: Int64 = 0,
+                durationMs: Int64 = 0,
+                app: String? = nil
+            ) {
+                self.playing = playing
+                self.title = title
+                self.subtitle = subtitle
+                self.positionMs = positionMs
+                self.durationMs = durationMs
+                self.app = app
+            }
         }
     }
 
@@ -165,6 +220,13 @@ public enum Protocol {
         public var name: String
         public var color: String
         public var favourite: Bool
+
+        public init(package: String, name: String, color: String, favourite: Bool) {
+            self.package = package
+            self.name = name
+            self.color = color
+            self.favourite = favourite
+        }
     }
 
     public static func decode(_ frame: String) -> ServerMessage? {
@@ -224,7 +286,7 @@ public enum Protocol {
         public var dy: Double
         public var ts: Int64
 
-        public init(dx: Double, dy: Double, ts: Int64 = Protocol.nowMillis()) {
+        public init(dx: Double, dy: Double, ts: Int64 = Wire.nowMillis()) {
             self.dx = dx
             self.dy = dy
             self.ts = ts

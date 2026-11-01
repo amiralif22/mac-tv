@@ -74,7 +74,7 @@ data class DeviceProfile(
 /** The overscan-safe inset Android TV recommends, from Leanback's own guidelines. */
 fun View.applyTvSafeInsets() {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) return
-    val safe = runCatching { androidx.leanback.system.Settings.getInstance().safeInsetLeft }.getOrDefault(0)
+    val safe = runCatching { androidx.leanback.system.Settings.getInstance(context).safeInsetLeft }.getOrDefault(0)
     if (safe <= 0) return
     setPadding(safe, safe, safe, safe)
 }

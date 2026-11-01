@@ -130,7 +130,7 @@ struct RemoteScreen: View {
         }
     }
 
-    private func arrow(_ key: Protocol.Key) -> some View {
+    private func arrow(_ key: Wire.Key) -> some View {
         HardwareButton(action: {
             connection.key(key)
         }, haptic: { Haptics.tap() }, height: 48) {
@@ -161,7 +161,7 @@ struct RemoteScreen: View {
         }
     }
 
-    private func transport(for media: Protocol.TVState.Media) -> some View {
+    private func transport(for media: Wire.TVState.Media) -> some View {
         VStack(spacing: 8) {
             HStack(spacing: 8) {
                 Text(media.title)

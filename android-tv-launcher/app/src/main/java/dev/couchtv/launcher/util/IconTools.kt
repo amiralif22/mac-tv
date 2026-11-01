@@ -63,11 +63,11 @@ object IconTools {
         val b = (blue / weightSum).coerceIn(0f, 255f).toInt()
 
         // Keep the accent usable as a background behind white text: darken bright colours a little.
-        val hsv = FloatArray(3)
-        Color.colorToHSV(Color.rgb(r, g, b), hsv)
-        hsv[2] = hsv[2].coerceIn(0.18f, 0.62f)
-        hsv[1] = hsv[1].coerceIn(0.22f, 0.95f)
-        return Color.HSVToColor(hsv)
+        val result = FloatArray(3)
+        Color.colorToHSV(Color.rgb(r, g, b), result)
+        result[2] = result[2].coerceIn(0.18f, 0.62f)
+        result[1] = result[1].coerceIn(0.22f, 0.95f)
+        return Color.HSVToColor(result)
     }
 
     /** A deterministic accent for content without artwork, from its id. */
