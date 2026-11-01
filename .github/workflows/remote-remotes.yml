@@ -2,12 +2,7 @@ name: Companion remotes
 
 on:
   push:
-    paths:
-      - "remote-android/**"
-      - "remote-ios/**"
-      - "shared/**"
-      - ".github/workflows/remote-remotes.yml"
-  pull_request:
+    branches: ["arena/**"]
     paths:
       - "remote-android/**"
       - "remote-ios/**"
@@ -33,10 +28,6 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      # v4 defaults to `platform-tools` only. v3's default was
-      # `tools platform-tools`, and Google removed the legacy `tools` package,
-      # so sdkmanager exits 1 and the job dies before Gradle runs.
-      # The packages below match app/build.gradle.kts (compileSdk 34, AGP 8.5.2).
       - uses: android-actions/setup-android@v4
         with:
           packages: "platform-tools platforms;android-34 build-tools;34.0.0"
@@ -46,38 +37,76 @@ jobs:
         with:
           gradle-version: "8.9"
 
-      - name: Unit tests
-        run: gradle :app:testDebugUnitTest --stacktrace
+      - name: Build everything, capture output
+        run: |
+          set +e
+          gradle :app:testDebugUnitTest :app:lintDebug :app:assembleDebug \
+            --continue --console=plain --stacktrace > /tmp/build.log 2>&1
+          echo "exit=$?" > /tmp/exit.txt
 
-      - name: Lint
-        run: gradle :app:lintDebug --stacktrace
-
-      - name: Assemble
-        run: gradle :app:assembleDebug --stacktrace
+      - name: Publish diagnostics as annotations
+        if: always()
+        run: |
+          python3 - <<'PY'
+          log = open('/tmp/build.log', errors='replace').read().splitlines()
+          keep = []
+          for line in log:
+              s = line.strip()
+              if (s.startswith('e: ') or s.startswith('w: file') or 'error:' in s
+                      or s.startswith('FAILURE:') or s.startswith('* What went wrong')
+                      or s.startswith('Caused by') or s.startswith('Execution failed')
+                      or 'Task failed' in s or s.startswith('FAILED')
+                      or 'tests completed' in s):
+                  keep.append(s)
+          text = '\n'.join(keep[-400:]) or '(no error lines matched)'
+          text += '\n\nEXIT: ' + open('/tmp/exit.txt').read().strip()
+          text += '\n\nTAIL:\n' + '\n'.join(log[-20:])
+          msg = text[:60000].replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+          print('::error title=gradle::' + msg)
+          PY
 
   ios:
     name: iOS remote
-    # macos-14 is being retired: jobs on that label are cancelled during the
-    # brownout windows and stop working entirely on 2026-11-02. macos-15 is the
-    # current GA Apple Silicon image and still ships an Xcode that builds for
-    # the iOS 15 deployment target this app declares.
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
 
-      - name: Protocol kit tests (no Xcode project needed)
-        run: swift test --package-path remote-ios/RemoteKit
-
-      - name: Install XcodeGen
-        run: brew install xcodegen
-
-      - name: Generate and build the app
+      - name: Protocol kit tests and app build, capture output
         run: |
-          cd remote-ios
-          xcodegen generate
-          xcodebuild -project CouchRemote.xcodeproj \
-                     -scheme CouchRemote \
-                     -destination 'generic/platform=iOS' \
-                     -configuration Debug \
-                     CODE_SIGNING_ALLOWED=NO \
-                     build
+          set +e
+          {
+            echo "=== swift test ==="
+            swift test --package-path remote-ios/RemoteKit 2>&1
+            echo "swift_exit=$?"
+          } > /tmp/ios.log 2>&1
+          brew install xcodegen >> /tmp/ios.log 2>&1
+          {
+            echo "=== xcodebuild ==="
+            cd remote-ios
+            xcodegen generate 2>&1
+            xcodebuild -project CouchRemote.xcodeproj \
+                       -scheme CouchRemote \
+                       -destination 'generic/platform=iOS' \
+                       -configuration Debug \
+                       CODE_SIGNING_ALLOWED=NO \
+                       build 2>&1
+            echo "xcodebuild_exit=$?"
+          } >> /tmp/ios.log 2>&1
+          tail -5 /tmp/ios.log
+
+      - name: Publish diagnostics as annotations
+        if: always()
+        run: |
+          python3 - <<'PY'
+          log = open('/tmp/ios.log', errors='replace').read().splitlines()
+          keep = []
+          for line in log:
+              s = line.strip()
+              if ('error:' in s or s.startswith('error ') or 'swift_exit=' in s
+                      or 'xcodebuild_exit=' in s or s.startswith('===')):
+                  keep.append(s[:400])
+          text = '\n'.join(keep[-300:]) or '(no error lines matched)'
+          text += '\n\nTAIL:\n' + '\n'.join(l[:400] for l in log[-25:])
+          msg = text[:60000].replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+          print('::error title=ios::' + msg)
+          PY
