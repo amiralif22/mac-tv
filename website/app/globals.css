@@ -171,6 +171,17 @@ body {
   font-size: inherit;
 }
 
+/* Inline code outside the prose column, e.g. a file name inside a download note. */
+.inline-code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: rgb(var(--line) / 0.07);
+  border: 1px solid rgb(var(--line) / 0.1);
+  border-radius: 6px;
+  padding: 0.08em 0.3em;
+  color: rgb(var(--ink));
+}
+
 /* The TV in the hero: a bezel, a screen, a stand. Everything inside is CSS so it stays crisp. */
 .tv-bezel {
   background: linear-gradient(180deg, #3a3b42, #23242a 55%, #17181d);

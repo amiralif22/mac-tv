@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import Reveal from '@/components/Reveal';
+import InlineText from '@/components/InlineText';
 import { docs, faq, site } from '@/lib/site';
 
 export const metadata: Metadata = {
@@ -66,7 +67,9 @@ export default function DocsPage() {
             <Reveal key={section.id}>
               <section id={section.id} className="scroll-mt-24 border-t border-line/10 pt-8 first:border-0 first:pt-0">
                 <h2 className="!mt-0">{section.title}</h2>
-                <p>{section.intro}</p>
+                <p>
+                  <InlineText text={section.intro} />
+                </p>
                 {section.steps && (
                   <ol className="mt-5 space-y-4">
                     {section.steps.map((step, index) => (
@@ -77,7 +80,9 @@ export default function DocsPage() {
                           </span>
                           {step.title}
                         </p>
-                        <p className="!mb-0 text-sm">{step.body}</p>
+                        <p className="!mb-0 text-sm">
+                          <InlineText text={step.body} />
+                        </p>
                         {step.code && <pre className="!mb-0 mt-3">
                           <code>{step.code}</code>
                         </pre>}
@@ -100,7 +105,9 @@ export default function DocsPage() {
                       +
                     </span>
                   </summary>
-                  <p className="!mb-0 !mt-2 text-sm">{item.a}</p>
+                  <p className="!mb-0 !mt-2 text-sm">
+                    <InlineText text={item.a} />
+                  </p>
                 </details>
               ))}
             </div>

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Reveal from '@/components/Reveal';
 import Icon from '@/components/Icon';
+import InlineText from '@/components/InlineText';
 import { features, site } from '@/lib/site';
 
 export const metadata: Metadata = {
@@ -110,7 +111,9 @@ export default function FeaturesPage() {
                   <Icon name={feature.glyph} />
                 </span>
                 <h2 className="mt-3 text-sm font-semibold text-ink">{feature.title}</h2>
-                <p className="mt-1.5 text-[13px] leading-relaxed text-dim">{feature.body}</p>
+                <p className="mt-1.5 text-[13px] leading-relaxed text-dim">
+                  <InlineText text={feature.body} />
+                </p>
               </div>
             </Reveal>
           ))}
@@ -126,7 +129,9 @@ export default function FeaturesPage() {
                 <h2 className="display mt-3 text-[clamp(1.6rem,3vw,2.2rem)]">{section.title}</h2>
               </div>
               <div>
-                <p className="text-base leading-relaxed text-dim">{section.body}</p>
+                <p className="text-base leading-relaxed text-dim">
+                  <InlineText text={section.body} />
+                </p>
                 <ul className="mt-5 space-y-2.5">
                   {section.points.map((point) => (
                     <li key={point} className="flex gap-3 text-sm leading-relaxed text-dim">

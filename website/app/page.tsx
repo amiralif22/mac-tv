@@ -4,6 +4,7 @@ import TvMockup from '@/components/TvMockup';
 import Reveal from '@/components/Reveal';
 import Icon from '@/components/Icon';
 import PickerDemo from '@/components/PickerDemo';
+import InlineText from '@/components/InlineText';
 import { comparison, features, site } from '@/lib/site';
 
 export const metadata: Metadata = {
@@ -126,7 +127,9 @@ export default function HomePage() {
                     <Icon name={feature.glyph} />
                   </span>
                   <h3 className="mt-4 text-base font-semibold text-ink">{feature.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-dim">{feature.body}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-dim">
+                    <InlineText text={feature.body} />
+                  </p>
                 </div>
               </Reveal>
             ))}

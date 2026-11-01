@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Reveal from '@/components/Reveal';
 import QrCode from '@/components/QrCode';
+import InlineText from '@/components/InlineText';
 import { downloads, site } from '@/lib/site';
 
 export const metadata: Metadata = {
@@ -66,7 +67,11 @@ export default function DownloadPage() {
                     >
                       {item.cta}
                     </a>
-                    {item.note && <p className="mt-2 max-w-xs text-[11px] leading-relaxed text-faint">{item.note}</p>}
+                    {item.note && (
+                      <p className="mt-2 max-w-xs text-[11px] leading-relaxed text-faint">
+                        <InlineText text={item.note} />
+                      </p>
+                    )}
                   </div>
                   {item.qr && <QrCode value={item.href} size={92} label="Scan for the release page" />}
                 </div>
