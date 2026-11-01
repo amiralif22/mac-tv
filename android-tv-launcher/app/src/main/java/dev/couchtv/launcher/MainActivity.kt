@@ -1,5 +1,6 @@
 package dev.couchtv.launcher
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.view.KeyEvent
@@ -61,7 +62,13 @@ class MainActivity : ComponentActivity() {
         handleIntent(intent)
     }
 
-    /** Bypasses this activity's own handling: used when the *phone* sends a media key. */
+    /**
+     * Bypasses this activity's own handling: used when the *phone* sends a media key.
+     *
+     * `super.dispatchKeyEvent` is the platform Activity implementation we want; androidx.core's
+     * override is annotated @RestrictTo, so lint flags the call even from a subclass.
+     */
+    @SuppressLint("RestrictedApi")
     private fun superDispatch(event: KeyEvent): Boolean = super.dispatchKeyEvent(event)
 
     private fun handleIntent(intent: Intent?) {
@@ -79,6 +86,7 @@ class MainActivity : ComponentActivity() {
         vm.noteActivity()
     }
 
+    @SuppressLint("RestrictedApi") // See superDispatch(): the restricted super class is ours.
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         // A grid, a form or search field takes the keys for as long as it is on screen.
         UiKeys.handler?.let { handler -> if (handler(event)) return true }
