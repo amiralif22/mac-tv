@@ -12,6 +12,8 @@ on:
       - "remote-android/**"
       - "remote-ios/**"
       - "shared/**"
+      - ".github/workflows/remote-remotes.yml"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -31,7 +33,14 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - uses: android-actions/setup-android@v3
+      # v4 defaults to `platform-tools` only. v3's default was
+      # `tools platform-tools`, and Google removed the legacy `tools` package,
+      # so sdkmanager exits 1 and the job dies before Gradle runs.
+      # The packages below match app/build.gradle.kts (compileSdk 34, AGP 8.5.2).
+      - uses: android-actions/setup-android@v4
+        with:
+          packages: "platform-tools platforms;android-34 build-tools;34.0.0"
+          log-accepted-android-sdk-licenses: false
 
       - uses: gradle/actions/setup-gradle@v4
         with:
@@ -48,7 +57,11 @@ jobs:
 
   ios:
     name: iOS remote
-    runs-on: macos-14
+    # macos-14 is being retired: jobs on that label are cancelled during the
+    # brownout windows and stop working entirely on 2026-11-02. macos-15 is the
+    # current GA Apple Silicon image and still ships an Xcode that builds for
+    # the iOS 15 deployment target this app declares.
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
 
