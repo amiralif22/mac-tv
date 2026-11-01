@@ -1,0 +1,16 @@
+# Gradle
+.gradle/
+build/
+local.properties
+captures/
+.cxx/
+
+# IDE
+.idea/
+*.iml
+.DS_Store
+
+# Keystores (never commit a signing key)
+*.jks
+*.keystore
+keystore.properties

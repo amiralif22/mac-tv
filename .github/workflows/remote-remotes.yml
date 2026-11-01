@@ -1,0 +1,70 @@
+name: Companion remotes
+
+on:
+  push:
+    paths:
+      - "remote-android/**"
+      - "remote-ios/**"
+      - "shared/**"
+      - ".github/workflows/remote-remotes.yml"
+  pull_request:
+    paths:
+      - "remote-android/**"
+      - "remote-ios/**"
+      - "shared/**"
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    name: Android remote
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: remote-android
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: android-actions/setup-android@v3
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+
+      - name: Unit tests
+        run: gradle :app:testDebugUnitTest --stacktrace
+
+      - name: Lint
+        run: gradle :app:lintDebug --stacktrace
+
+      - name: Assemble
+        run: gradle :app:assembleDebug --stacktrace
+
+  ios:
+    name: iOS remote
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Protocol kit tests (no Xcode project needed)
+        run: swift test --package-path remote-ios/RemoteKit
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate and build the app
+        run: |
+          cd remote-ios
+          xcodegen generate
+          xcodebuild -project CouchRemote.xcodeproj \
+                     -scheme CouchRemote \
+                     -destination 'generic/platform=iOS' \
+                     -configuration Debug \
+                     CODE_SIGNING_ALLOWED=NO \
+                     build

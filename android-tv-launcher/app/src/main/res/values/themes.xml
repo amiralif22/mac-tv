@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Compose draws everything; the window itself is the same near-black as the Mac app's canvas
+         (#0A0B0E), so there is no flash of a different colour on launch. -->
+    <style name="Theme.CouchTv" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/canvas</item>
+        <item name="android:colorBackground">@color/canvas</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
+</resources>
