@@ -8,6 +8,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+/** Default port the TV's remote server listens on, unless mDNS advertised another one. */
+internal const val DEFAULT_REMOTE_PORT = 8765
+
 /**
  * One TV on the LAN, as the remote understands it.
  *
@@ -22,9 +25,55 @@ data class DiscoveredTv(
     val pairing: Boolean,
     val manual: Boolean = false,
 ) {
-    val address: String get() = "$host:$port"
-    val websocketUrl: String get() = "ws://$host:$port/remote"
-    fun iconUrl(packageName: String): String = "http://$host:$port/icon?pkg=$packageName"
+    /** IPv6 literals must be bracketed inside a URL, IPv4 and hostnames must not be. */
+    private val hostLiteral: String get() = if (':' in host && !host.startsWith("[")) "[$host]" else host
+
+    val address: String get() = "$hostLiteral:$port"
+    val websocketUrl: String get() = "ws://$hostLiteral:$port/remote"
+    fun iconUrl(packageName: String): String = "http://$hostLiteral:$port/icon?pkg=$packageName"
+}
+
+/** A hand-typed TV address, split into the two parts a socket needs. */
+internal data class ManualAddress(val host: String, val port: Int)
+
+/**
+ * Parses what a person can reasonably type into the manual-entry field.
+ *
+ * Accepted: `192.168.1.42`, `192.168.1.42:8765`, `tv.local:8765`, `[fe80::1]:8765` and bare
+ * `fe80::1` (which keeps the default port). Rejected: empty input, unparseable ports, ports outside
+ * 1–65535, half-written brackets and a trailing colon.
+ */
+internal fun parseManualAddress(raw: String, defaultPort: Int = DEFAULT_REMOTE_PORT): ManualAddress? {
+    val trimmed = raw.trim()
+    if (trimmed.isEmpty()) return null
+
+    var host = trimmed
+    var port = defaultPort
+
+    when {
+        // Bracketed IPv6: the closing bracket is the only reliable separator.
+        trimmed.startsWith("[") -> {
+            val closing = trimmed.indexOf(']')
+            if (closing < 0) return null
+            host = trimmed.substring(1, closing)
+            val rest = trimmed.substring(closing + 1)
+            if (rest.isNotEmpty()) {
+                if (!rest.startsWith(":")) return null
+                port = rest.drop(1).toIntOrNull() ?: return null
+            }
+        }
+        // A single colon means "host:port"; more than one is a bare IPv6 literal without a port.
+        trimmed.count { it == ':' } == 1 -> {
+            val separator = trimmed.lastIndexOf(':')
+            host = trimmed.substring(0, separator)
+            port = trimmed.substring(separator + 1).toIntOrNull() ?: return null
+        }
+    }
+
+    host = host.trim()
+    if (host.isEmpty() || ' ' in host) return null
+    if (port !in 1..65535) return null
+    return ManualAddress(host = host, port = port)
 }
 
 /**
@@ -114,32 +163,14 @@ class Discovery(private val context: Context) {
 
     /** Accepts "192.168.1.42", "192.168.1.42:8765" or "[fe80::1]:8765". */
     fun addManual(address: String): DiscoveredTv? {
-        val trimmed = address.trim()
-        if (trimmed.isEmpty()) return null
-
-        var host = trimmed
-        var port = DEFAULT_PORT
-        when {
-            trimmed.startsWith("[") && trimmed.contains("]") -> {
-                val closing = trimmed.indexOf(']')
-                host = trimmed.substring(1, closing)
-                val rest = trimmed.substring(closing + 1)
-                if (rest.startsWith(":")) port = rest.drop(1).toIntOrNull() ?: return null
-            }
-            trimmed.count { it == ':' } == 1 -> {
-                val separator = trimmed.lastIndexOf(':')
-                host = trimmed.substring(0, separator)
-                port = trimmed.substring(separator + 1).toIntOrNull() ?: return null
-            }
-        }
-        if (host.isBlank() || port !in 1..65535) return null
+        val parsed = parseManualAddress(address) ?: return null
 
         val tv = DiscoveredTv(
-            id = "manual:$host:$port",
-            name = host,
+            id = "manual:${parsed.host}:${parsed.port}",
+            name = parsed.host,
             model = "Entered by hand",
-            host = host,
-            port = port,
+            host = parsed.host,
+            port = parsed.port,
             pairing = false,
             manual = true,
         )
@@ -184,6 +215,5 @@ class Discovery(private val context: Context) {
 
     private companion object {
         const val SERVICE_TYPE = "_couchremote._tcp."
-        const val DEFAULT_PORT = 8765
     }
 }

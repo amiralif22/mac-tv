@@ -31,7 +31,7 @@ on one phone.
 | `.../net/Protocol.kt` | Client half of remote protocol v1 |
 | `.../net/RemoteClient.kt` | WebSocket client: handshake, pairing, reconnect with backoff, 15 s ping |
 | `.../net/Discovery.kt` | NSD discovery plus manual `host:port` entry |
-| `.../net/TokenVault.kt` | Pairing tokens encrypted with an Android Keystore key |
+| `.../net/TokenVault.kt` | Pairing tokens encrypted with an Android Keystore key; framing is unit-tested |
 | `.../net/PointerGain.kt` | The touchpad arithmetic, pure Kotlin, unit-tested |
 
 `shared/remote-protocol.md` is the specification. `Protocol.kt` is a deliberate copy of the TV's codec
@@ -62,6 +62,8 @@ No storage, no location, no microphone, no analytics, nothing backed up.
 
 ## Tests
 
-`app/src/test` covers the two pieces that are pure on purpose: the protocol codec (every frame in both
-directions, plus junk input) and the pointer arithmetic (gain, dead zone, clamping, jitter). They run on
-the JVM without a device.
+`app/src/test` covers the pieces that are pure on purpose: the protocol codec (every frame in both
+directions, plus junk input), the pointer arithmetic (gain, dead zone, clamping, jitter), manual address
+parsing (IPv4, hostnames, bracketed and bare IPv6, broken ports) and the token framing that puts an
+AES-GCM initialisation vector in front of its ciphertext. They run on the JVM without a device; anything
+touching the Keystore or NSD needs real hardware and is exercised by hand.
