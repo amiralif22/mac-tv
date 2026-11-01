@@ -88,6 +88,9 @@ dependencies {
     // Images: Coil for posters, with a disk cache so the home screen paints before any network.
     implementation("io.coil-kt:coil-compose:2.7.0")
 
+    // Streaming tokens live in EncryptedSharedPreferences; the key stays in the Android Keystore.
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+
     // Remote control server: a small, well-tested WebSocket implementation (~200 KB).
     implementation("org.java-websocket:Java-WebSocket:1.5.7")
 

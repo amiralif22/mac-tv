@@ -8,6 +8,13 @@
     <!-- mDNS discovery needs multicast. -->
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
 
+    <!-- Voice search runs inside the recognition app, so this one never holds the microphone. -->
+    <queries>
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+    </queries>
+
     <application
         android:allowBackup="false"
         android:fullBackupContent="@xml/backup_rules"
@@ -27,11 +34,5 @@
             </intent-filter>
         </activity>
 
-        <!-- Voice search runs inside the recognition app, so this one never holds the microphone. -->
-        <queries>
-            <intent>
-                <action android:name="android.speech.RecognitionService" />
-            </intent>
-        </queries>
     </application>
 </manifest>

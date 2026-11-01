@@ -112,14 +112,14 @@ final class ProtocolTests: XCTestCase {
     }
 
     func testUnknownAndMalformedFramesAreIgnored() {
-        XCTAssertNil(Protocol.decode("""{"t":"teleport"}"""))
+        XCTAssertNil(Protocol.decode("{\"t\":\"teleport\"}"))
         XCTAssertNil(Protocol.decode("not json"))
         XCTAssertNil(Protocol.decode(""))
-        XCTAssertNil(Protocol.decode("""{"no":"type"}"""))
+        XCTAssertNil(Protocol.decode("{\"no\":\"type\"}"))
         // A known type with a missing token cannot be a welcome, and must not crash.
-        XCTAssertNil(Protocol.decode("""{"t":"welcome","device":"x"}"""))
+        XCTAssertNil(Protocol.decode("{\"t\":\"welcome\",\"device\":\"x\"}"))
         // Extra keys are tolerated.
-        if case .toast? = Protocol.decode("""{"t":"toast","text":"Volume 40%","future":1}""") {} else {
+        if case .toast? = Protocol.decode("{\"t\":\"toast\",\"text\":\"Volume 40%\",\"future\":1}") {} else {
             XCTFail("expected a toast")
         }
     }

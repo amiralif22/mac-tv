@@ -63,6 +63,7 @@ import dev.couchtv.launcher.ui.theme.LocalPalette
  */
 
 /** The Mac's `tvGlass`: a translucent fill, a bright top edge, a hairline rim. */
+@Composable
 fun Modifier.glass(
     palette: CouchPalette = LocalPalette.current,
     shape: Shape = RoundedCornerShape(CouchShapes.panel),
@@ -73,6 +74,7 @@ fun Modifier.glass(
     .border(1.dp, palette.hairline, shape)
 
 /** A panel, for sheets and cards: opaque enough to read text on, over any artwork. */
+@Composable
 fun Modifier.panel(palette: CouchPalette = LocalPalette.current, shape: Shape = RoundedCornerShape(CouchShapes.panel)): Modifier =
     this
         .clip(shape)

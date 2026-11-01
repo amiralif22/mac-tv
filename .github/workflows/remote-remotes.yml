@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   android:
@@ -44,26 +44,33 @@ jobs:
             --continue --console=plain --stacktrace > /tmp/build.log 2>&1
           echo "exit=$?" > /tmp/exit.txt
 
-      - name: Publish diagnostics as annotations
+      - name: Publish diagnostics
         if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           python3 - <<'PY'
           log = open('/tmp/build.log', errors='replace').read().splitlines()
           keep = []
           for line in log:
+              if line.startswith('> Task'):
+                  continue
               s = line.strip()
-              if (s.startswith('e: ') or s.startswith('w: file') or 'error:' in s
+              if (s.startswith('e: ') or s.startswith('w: ') or 'error:' in s
                       or s.startswith('FAILURE:') or s.startswith('* What went wrong')
                       or s.startswith('Caused by') or s.startswith('Execution failed')
                       or 'Task failed' in s or s.startswith('FAILED')
-                      or 'tests completed' in s):
-                  keep.append(s)
-          text = '\n'.join(keep[-400:]) or '(no error lines matched)'
-          text += '\n\nEXIT: ' + open('/tmp/exit.txt').read().strip()
-          text += '\n\nTAIL:\n' + '\n'.join(log[-20:])
-          msg = text[:60000].replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
-          print('::error title=gradle::' + msg)
+                      or 'tests completed' in s or 'AAPT' in s):
+                  keep.append(line[:600])
+          body = '## android remote diagnostics\n\n```\n'
+          body += '\n'.join(keep[:1500]) or '(nothing matched)'
+          body += '\n\n--- tail ---\n'
+          body += '\n'.join(l[:600] for l in log[-40:])
+          body += '\n```\n\nEXIT: ' + open('/tmp/exit.txt').read().strip() + '\n'
+          open('/tmp/body.md','w').write(body[:200000])
           PY
+          gh api -X POST "repos/${{ github.repository }}/commits/${{ github.sha }}/comments" \
+            --field body="$(cat /tmp/body.md)" >/dev/null || echo "diagnostics comment failed"
 
   ios:
     name: iOS remote
@@ -92,21 +99,22 @@ jobs:
                        build 2>&1
             echo "xcodebuild_exit=$?"
           } >> /tmp/ios.log 2>&1
-          tail -5 /tmp/ios.log
 
-      - name: Publish diagnostics as annotations
+      - name: Publish diagnostics
         if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           python3 - <<'PY'
           log = open('/tmp/ios.log', errors='replace').read().splitlines()
-          keep = []
-          for line in log:
-              s = line.strip()
-              if ('error:' in s or s.startswith('error ') or 'swift_exit=' in s
-                      or 'xcodebuild_exit=' in s or s.startswith('===')):
-                  keep.append(s[:400])
-          text = '\n'.join(keep[-300:]) or '(no error lines matched)'
-          text += '\n\nTAIL:\n' + '\n'.join(l[:400] for l in log[-25:])
-          msg = text[:60000].replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
-          print('::error title=ios::' + msg)
+          keep = [l[:600] for l in log
+                  if 'error:' in l or 'warning:' in l or '_exit=' in l or 'BUILD' in l or l.startswith('===') or 'Testing failed' in l or 'Compiling' in l or 'failed' in l.lower()]
+          body = '## ios remote diagnostics\n\n```\n'
+          body += '\n'.join(keep[:1500]) or '(nothing matched)'
+          body += '\n\n--- tail ---\n'
+          body += '\n'.join(l[:600] for l in log[-40:])
+          body += '\n```\n'
+          open('/tmp/body.md','w').write(body[:200000])
           PY
+          gh api -X POST "repos/${{ github.repository }}/commits/${{ github.sha }}/comments" \
+            --field body="$(cat /tmp/body.md)" >/dev/null || echo "diagnostics comment failed"
